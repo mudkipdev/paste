@@ -1,6 +1,6 @@
 import copy from 'copy-to-clipboard';
 import history from 'history/browser';
-import { MutableRefObject, useCallback, useEffect, useState } from 'react';
+import { RefObject, useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 import themes, { Themes } from '../style/themes';
@@ -12,7 +12,7 @@ import MenuButton from './MenuButton';
 
 export interface EditorControlsProps {
   actualContent: string;
-  resetFunction: MutableRefObject<ResetFunction | undefined>;
+  resetFunction: RefObject<ResetFunction | null>;
   language: string;
   setLanguage: (value: string) => void;
   readOnly: boolean;
@@ -136,7 +136,7 @@ export default function EditorControls({
 const Header = styled.header`
   position: fixed;
   top: 0;
-  z-index: 2;
+  z-index: 10;
   width: 100%;
   height: 2em;
   color: ${props => props.theme.primary};

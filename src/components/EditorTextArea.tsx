@@ -5,18 +5,19 @@ import Editor, {
   OnMount,
 } from '@monaco-editor/react';
 import history from 'history/browser';
-import React, {
-  MutableRefObject,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import { RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import themes, { Theme } from '../style/themes';
 
 import type { editor } from 'monaco-editor';
+import { diffLanguage } from '../util/languages/diff';
+import { logLanguage } from '../util/languages/log';
 import { ResetFunction } from './Editor';
+
+import { loader } from '@monaco-editor/react';
+import * as monaco from 'monaco-editor';
+
+loader.config({ monaco });
 
 export interface EditorTextAreaProps {
   forcedContent: string;
@@ -26,7 +27,7 @@ export interface EditorTextAreaProps {
   language: string;
   fontSize: number;
   readOnly: boolean;
-  resetFunction: MutableRefObject<ResetFunction | undefined>;
+  resetFunction: RefObject<ResetFunction | null>;
 }
 
 export default function EditorTextArea({
@@ -59,6 +60,11 @@ export default function EditorTextArea({
     for (const theme of Object.values(themes) as Theme[]) {
       monaco.editor.defineTheme(theme.id, theme.editor);
     }
+
+    monaco.languages.register({ id: 'log' });
+    monaco.languages.setMonarchTokensProvider('log', logLanguage);
+    monaco.languages.register({ id: 'diff' });
+    monaco.languages.setMonarchTokensProvider('diff', diffLanguage);
 
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
@@ -242,7 +248,7 @@ function useSelectedLine(): [SelectedLine, ToggleSelectedFunction] {
 }
 
 function useLineNumberMagic(
-  editorAreaRef: React.RefObject<HTMLDivElement>,
+  editorAreaRef: RefObject<HTMLDivElement | null>,
   selected: SelectedLine,
   toggleSelected: ToggleSelectedFunction,
   forcedContent: string,
@@ -257,13 +263,13 @@ function useLineNumberMagic(
     }
 
     const handler = (click: MouseEvent) => {
-      const target = click?.target as HTMLElement;
+      const element = document.elementFromPoint(click.x, click.y);
       if (
-        target &&
-        target.classList.contains('line-numbers') &&
-        target.textContent
+        element &&
+        element.classList.contains('line-numbers') &&
+        element.textContent
       ) {
-        toggleSelected(parseInt(target.textContent), click);
+        toggleSelected(parseInt(element.textContent), click);
       }
     };
 

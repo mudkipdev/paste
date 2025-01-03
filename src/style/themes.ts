@@ -65,6 +65,14 @@ const themes: Themes = {
         keyword: '#ff7b72',
         type: '#ffa657',
         variable: '#ffa657',
+        logInfo: '#3fb950', // green.3
+        logError: '#f85149', // red.4
+        logWarning: '#d29922', // yellow.3
+        logDate: '#33B3AE', // teal.3
+        logException: '#f8e3a1', // yellow.0
+        diffMeta: '#33B3AE', // teal.3
+        diffAddition: '#3fb950', // green.3
+        diffDeletion: '#f85149', // red.4
       },
     }),
   },
@@ -96,6 +104,14 @@ const themes: Themes = {
         keyword: '#0077aa',
         type: '#DD4A68',
         variable: '#ee9900',
+        logInfo: '#2da44e', // green.4
+        logError: '#cf222e', // red.5
+        logWarning: '#d4a72c', // yellow.3
+        logDate: '#136061', // teal.6
+        logException: '#7d4e00', // yellow.6
+        diffMeta: '#136061', // teal.6
+        diffAddition: '#2da44e', // green.4
+        diffDeletion: '#cf222e', // red.5
       },
     }),
   },
@@ -110,7 +126,16 @@ const themes: Themes = {
       color: '#586e75',
       backgroundColor: '#44475a',
     },
-    editor: dracula as editor.IStandaloneThemeData,
+    editor: addExtraColors(dracula as editor.IStandaloneThemeData, {
+      logInfo: '#50FA7B', // green
+      logError: '#FF5555', // red
+      logWarning: '#FFB86C', // orange
+      logDate: '#BD93F9', // purple
+      logException: '#F1FA8C', // yellow
+      diffMeta: '#BD93F9', // purple
+      diffAddition: '#50FA7B', // green
+      diffDeletion: '#FF5555', // red
+    }),
   },
   'monokai': {
     id: 'monokai',
@@ -123,7 +148,16 @@ const themes: Themes = {
       color: '#49483E',
       backgroundColor: '#3E3D32',
     },
-    editor: monokai as editor.IStandaloneThemeData,
+    editor: addExtraColors(monokai as editor.IStandaloneThemeData, {
+      logInfo: '#a6e22e', // green
+      logError: '#f92672', // red
+      logWarning: '#fd971f', // orange
+      logDate: '#AB9DF2', // purple
+      logException: '#F1FA8C', // yellow
+      diffMeta: '#AB9DF2', // purple
+      diffAddition: '#a6e22e', // green
+      diffDeletion: '#f92672', // red
+    }),
   },
   'solarized': {
     id: 'solarized',
@@ -136,7 +170,16 @@ const themes: Themes = {
       color: '#93a1a1', // base1
       backgroundColor: '#073642', // base02
     },
-    editor: solarizedDark as editor.IStandaloneThemeData,
+    editor: addExtraColors(solarizedDark as editor.IStandaloneThemeData, {
+      logInfo: '#268bd2', // blue
+      logError: '#dc322f', // red
+      logWarning: '#b58900', // yellow
+      logDate: '#2aa198', // cyan
+      logException: '#859900', // green
+      diffMeta: '#2aa198', // cyan
+      diffAddition: '#859900', // green
+      diffDeletion: '#dc322f', // red
+    }),
   },
   'solarized-light': {
     id: 'solarized-light',
@@ -149,7 +192,16 @@ const themes: Themes = {
       color: '#586e75', // base01
       backgroundColor: '#eee8d5', // base2
     },
-    editor: solarizedLight as editor.IStandaloneThemeData,
+    editor: addExtraColors(solarizedLight as editor.IStandaloneThemeData, {
+      logInfo: '#268bd2', // blue
+      logError: '#dc322f', // red
+      logWarning: '#b58900', // yellow
+      logDate: '#2aa198', // cyan
+      logException: '#859900', // green
+      diffMeta: '#2aa198', // cyan
+      diffAddition: '#859900', // green
+      diffDeletion: '#dc322f', // red
+    }),
   },
   'catppuccin-latte': {
     id: 'catppuccin-latte',
@@ -300,6 +352,17 @@ const themes: Themes = {
 
 export default themes;
 
+interface ExtraColors {
+  logInfo: Color;
+  logError: Color;
+  logWarning: Color;
+  logDate: Color;
+  logException: Color;
+  diffMeta: Color;
+  diffAddition: Color;
+  diffDeletion: Color;
+}
+
 interface MonacoThemeProps {
   base: 'vs' | 'vs-dark';
   colors: {
@@ -315,7 +378,7 @@ interface MonacoThemeProps {
     keyword: Color;
     type: Color;
     variable: Color;
-  };
+  } & ExtraColors;
 }
 
 export function makeMonacoTheme(
@@ -353,10 +416,40 @@ export function makeMonacoTheme(
       { token: 'identifier', foreground: colors.primary },
       { token: 'type', foreground: colors.type },
       { token: 'comment', foreground: colors.comment },
+      { token: 'info.log', foreground: colors.logInfo },
+      { token: 'error.log', foreground: colors.logError, fontStyle: 'bold' },
+      { token: 'warning.log', foreground: colors.logWarning },
+      { token: 'date.log', foreground: colors.logDate },
+      { token: 'exception.log', foreground: colors.logException },
+      { token: 'meta.diff', foreground: colors.diffMeta },
+      { token: 'addition.diff', foreground: colors.diffAddition },
+      { token: 'deletion.diff', foreground: colors.diffDeletion },
     ],
     colors: {
       'editor.background': `#${colors.background}`,
       'editor.foreground': `#${colors.primary}`,
     },
   };
+}
+
+export function addExtraColors(
+  theme: editor.IStandaloneThemeData,
+  extraColors: ExtraColors
+): editor.IStandaloneThemeData {
+  const colors = Object.fromEntries(
+    Object.entries(extraColors).map(([key, color]) => [key, color.substring(1)])
+  ) as Record<keyof ExtraColors, string>;
+  theme.rules.push(
+    ...[
+      { token: 'info.log', foreground: colors.logInfo },
+      { token: 'error.log', foreground: colors.logError, fontStyle: 'bold' },
+      { token: 'warning.log', foreground: colors.logWarning },
+      { token: 'date.log', foreground: colors.logDate },
+      { token: 'exception.log', foreground: colors.logException },
+      { token: 'meta.diff', foreground: colors.diffMeta },
+      { token: 'addition.diff', foreground: colors.diffAddition },
+      { token: 'deletion.diff', foreground: colors.diffDeletion },
+    ]
+  );
+  return theme;
 }
